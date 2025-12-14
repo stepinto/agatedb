@@ -46,7 +46,7 @@ fn test_basic() {
         ("key1", new_value(42)),
         ("key2", new_value(52)),
         ("key3", new_value(62)),
-        ("key5", Bytes::from(format!("{:0102400}", 1))),
+        ("key5", Bytes::from(vec![b'1'; 102400])),
         ("key4", new_value(72)),
     ];
 
@@ -69,9 +69,11 @@ fn test_concurrent_basic(n: usize, cap: usize, value_len: usize) {
     let list = Skiplist::with_capacity(comp, cap, true);
     let kvs: Vec<_> = (0..n)
         .map(|i| {
+            let mut data = format!("{}", i).into_bytes();
+            data.resize(value_len, b'0');
             (
                 key_with_ts(format!("{:05}", i).as_str(), 0),
-                Bytes::from(format!("{1:00$}", value_len, i)),
+                Bytes::from(data),
             )
         })
         .collect();
