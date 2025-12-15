@@ -7,9 +7,10 @@ use indicatif::{ProgressBar, ProgressStyle};
 #[path = "../../benches/common.rs"]
 mod common;
 
-use common::{
-    agate_iterate, agate_populate, agate_randread, rocks_iterate, rocks_populate, rocks_randread,
-};
+use common::{agate_iterate, agate_populate, agate_randread};
+
+#[cfg(feature = "enable-rocksdb")]
+use common::{rocks_iterate, rocks_populate, rocks_randread};
 
 pub struct Rate {
     pub data: std::sync::Arc<std::sync::atomic::AtomicU64>,
@@ -112,9 +113,13 @@ fn main() {
         ..Default::default()
     };
 
-    let mut rocks_opts = rocksdb::Options::default();
-    rocks_opts.create_if_missing(true);
-    rocks_opts.set_compression_type(rocksdb::DBCompressionType::None);
+    #[cfg(feature = "enable-rocksdb")]
+    let mut rocks_opts = {
+        let mut opts = rocksdb::Options::default();
+        opts.create_if_missing(true);
+        opts.set_compression_type(rocksdb::DBCompressionType::None);
+        opts
+    };
 
     match matches.subcommand() {
         ("populate", Some(sub_matches)) => {
@@ -198,6 +203,7 @@ fn main() {
                 cost.as_millis()
             );
         }
+        #[cfg(feature = "enable-rocksdb")]
         ("rocks_populate", Some(sub_matches)) => {
             let key_nums: u64 = sub_matches.value_of("key_nums").unwrap().parse().unwrap();
             let batch_size: u64 = sub_matches.value_of("batch_size").unwrap().parse().unwrap();
@@ -215,6 +221,7 @@ fn main() {
 
             println!("populate {} keys in {} ms", key_nums, cost.as_millis());
         }
+        #[cfg(feature = "enable-rocksdb")]
         ("rocks_randread", Some(sub_matches)) => {
             let times: u64 = sub_matches.value_of("times").unwrap().parse().unwrap();
             let key_nums: u64 = sub_matches.value_of("key_nums").unwrap().parse().unwrap();
@@ -247,6 +254,7 @@ fn main() {
                 cost.as_millis()
             );
         }
+        #[cfg(feature = "enable-rocksdb")]
         ("rocks_iterate", Some(sub_matches)) => {
             let times: u64 = sub_matches.value_of("times").unwrap().parse().unwrap();
             let key_nums: u64 = sub_matches.value_of("key_nums").unwrap().parse().unwrap();
