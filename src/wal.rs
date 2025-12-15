@@ -256,7 +256,7 @@ impl Wal {
     }
 
     /// Get WAL iterator
-    pub fn iter(&mut self) -> Result<WalIterator> {
+    pub fn iter(&mut self) -> Result<WalIterator<'_>> {
         Ok(WalIterator::new(Cursor::new(
             &self.mmap_file[0..self.size as usize],
         )))

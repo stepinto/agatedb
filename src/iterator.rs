@@ -214,7 +214,7 @@ impl Transaction {
     /// the transaction at the time iterator was created. If writes are performed after an
     /// iterator is created, then that iterator will not be able to see those writes. Only
     /// writes performed before an iterator was created can be viewed.
-    pub fn new_iterator(&self, opt: &IteratorOptions) -> Iterator {
+    pub fn new_iterator(&self, opt: &IteratorOptions) -> Iterator<'_> {
         if self.discarded {
             panic!("Transaction has already been discarded.")
         }
