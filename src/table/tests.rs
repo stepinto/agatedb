@@ -34,10 +34,7 @@ pub(crate) fn get_test_table_options() -> Options {
     }
 }
 
-fn generate_table_data(prefix: &[u8], n: usize, mut opts: Options) -> Vec<(Bytes, Bytes)> {
-    if opts.block_size == 0 {
-        opts.block_size = 4 * 1024;
-    }
+fn generate_table_data(prefix: &[u8], n: usize) -> Vec<(Bytes, Bytes)> {
     assert!(n <= 10000);
 
     let mut kv_pairs = vec![];
@@ -54,8 +51,11 @@ fn generate_table_data(prefix: &[u8], n: usize, mut opts: Options) -> Vec<(Bytes
 /// Build a test table.
 ///
 /// This function will be used in table builder test.
-pub(crate) fn build_test_table(prefix: &[u8], n: usize, opts: Options) -> TableGuard {
-    let kv_pairs = generate_table_data(prefix, n, opts.clone());
+pub(crate) fn build_test_table(prefix: &[u8], n: usize, mut opts: Options) -> TableGuard {
+    if opts.block_size == 0 {
+        opts.block_size = 4 * 1024;
+    }
+    let kv_pairs = generate_table_data(prefix, n);
     build_table(kv_pairs, opts)
 }
 
@@ -403,7 +403,7 @@ fn test_table_checksum() {
     let mut opts = get_test_table_options();
     opts.checksum_mode = ChecksumVerificationMode::OnTableAndBlockRead;
 
-    let kv_pairs = generate_table_data(b"k", 10000, opts.clone());
+    let kv_pairs = generate_table_data(b"k", 10000);
     let table_data = build_table_data(kv_pairs, opts.clone());
 
     let table = Table::open_in_memory(table_data.clone(), 233, opts).unwrap();

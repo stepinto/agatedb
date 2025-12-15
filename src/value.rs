@@ -129,7 +129,7 @@ impl EntryReader {
     }
 
     /// Entry returns header, key and value.
-    pub fn entry(&mut self, reader: &mut Cursor<&[u8]>) -> Result<EntryRef> {
+    pub fn entry(&mut self, reader: &mut Cursor<&[u8]>) -> Result<EntryRef<'_>> {
         self.header.decode(reader)?;
         if self.header.key_len > (1 << 16) {
             return Err(Error::LogRead(
